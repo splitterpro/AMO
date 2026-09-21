@@ -21,6 +21,27 @@
   margin-top: 1rem;
 }
 
+.csv-columns-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.csv-preview-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+
+.csv-preview-table th,
+.csv-preview-table td {
+  border: 1px solid #444;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+
 @media (prefers-color-scheme: light) {
   .csv-dropzone {
     border-color: #aaa;

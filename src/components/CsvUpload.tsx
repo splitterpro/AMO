@@ -1,46 +1,18 @@
-import { useCallback, useRef, useState } from 'react'
-import Papa from 'papaparse'
+import { useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import type { AppDispatch, RootState } from '../store'
+import { reset, uploadCsv } from '../features/csvUpload/csvUploadSlice'
 import './CsvUpload.css'
 
-type Status =
-  | { kind: 'idle' }
-  | { kind: 'error'; message: string }
-  | { kind: 'success'; result: { rows: number; columns: number } }
-
 function CsvUpload() {
-  const [status, setStatus] = useState<Status>({ kind: 'idle' })
+  const status = useSelector((state: RootState) => state.csvUpload)
+  const dispatch = useDispatch<AppDispatch>()
   const [isDragActive, setIsDragActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = useCallback((file: File | undefined) => {
-    if (!file) return
-
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setStatus({ kind: 'error', message: 'Please select a .csv file.' })
-      return
-    }
-
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const columns = results.meta.fields?.length ?? 0
-        const rows = results.data.length
-        if (columns === 0 || rows === 0) {
-          setStatus({ kind: 'error', message: 'The CSV file appears to be empty.' })
-          return
-        }
-        if (results.errors.length > 0) {
-          setStatus({ kind: 'error', message: results.errors[0].message })
-          return
-        }
-        setStatus({ kind: 'success', result: { rows, columns } })
-      },
-      error: (err) => {
-        setStatus({ kind: 'error', message: err.message })
-      },
-    })
-  }, [])
+  const handleFile = (file: File | undefined) => {
+    if (file) dispatch(uploadCsv(file))
+  }
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFile(e.target.files?.[0])
@@ -53,14 +25,27 @@ function CsvUpload() {
     handleFile(e.dataTransfer.files?.[0])
   }
 
-  const reset = () => setStatus({ kind: 'idle' })
-
   if (status.kind === 'success') {
+    const { rows, columns, column_info, preview } = status.result
+    const previewCols = Object.keys(preview[0] ?? {})
+
     return (
       <div className="csv-result">
-        <p>Rows: {status.result.rows}</p>
-        <p>Columns: {status.result.columns}</p>
-        <button onClick={reset}>Upload another file</button>
+        <p>Rows: {rows}</p>
+        <p>Columns: {columns}</p>
+
+        <table className="csv-preview-table">
+          <thead>
+            <tr>{previewCols.map((c) => <th key={c}>{c}</th>)}</tr>
+          </thead>
+          <tbody>
+            {preview.map((row, i) => (
+              <tr key={i}>{previewCols.map((c) => <td key={c}>{String(row[c] ?? '')}</td>)}</tr>
+            ))}
+          </tbody>
+        </table>
+
+        <button onClick={() => dispatch(reset())}>Upload another file</button>
       </div>
     )
   }
@@ -70,23 +55,14 @@ function CsvUpload() {
       <div
         className={`csv-dropzone ${isDragActive ? 'active' : ''}`}
         onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setIsDragActive(true)
-        }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragActive(true) }}
         onDragLeave={() => setIsDragActive(false)}
         onDrop={onDrop}
         role="button"
         tabIndex={0}
       >
-        <p>Drag and drop a .csv file here, or click to browse</p>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv"
-          onChange={onInputChange}
-          hidden
-        />
+        <p>{status.kind === 'loading' ? 'Uploading…' : 'Drag and drop a .csv file here, or click to browse'}</p>
+        <input ref={inputRef} type="file" accept=".csv" onChange={onInputChange} hidden />
       </div>
       {status.kind === 'error' && <p className="csv-error">{status.message}</p>}
     </div>
