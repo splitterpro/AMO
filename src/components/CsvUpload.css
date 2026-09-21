@@ -1,0 +1,28 @@
+.csv-dropzone {
+  border: 2px dashed #888;
+  border-radius: 8px;
+  padding: 3rem 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+.csv-dropzone:hover,
+.csv-dropzone.active {
+  border-color: #646cff;
+  background-color: rgba(100, 108, 255, 0.08);
+}
+
+.csv-error {
+  color: #e5484d;
+  margin-top: 1rem;
+}
+
+.csv-result button {
+  margin-top: 1rem;
+}
+
+@media (prefers-color-scheme: light) {
+  .csv-dropzone {
+    border-color: #aaa;
+  }
+}
