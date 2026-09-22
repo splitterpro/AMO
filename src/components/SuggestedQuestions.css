@@ -1,0 +1,62 @@
+.suggested-questions {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.suggested-questions h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.suggested-questions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.suggested-question-card {
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.suggested-question-card button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  cursor: pointer;
+}
+
+.suggested-question-answer {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.suggested-question-answer table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.suggested-question-answer th,
+.suggested-question-answer td {
+  border: 1px solid #444;
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+}
+
+.suggested-question-answer .error {
+  color: #e5484d;
+}
+
+@media (prefers-color-scheme: light) {
+  .suggested-question-card {
+    border-color: #ccc;
+  }
+
+  .suggested-question-answer th,
+  .suggested-question-answer td {
+    border-color: #ccc;
+  }
+}

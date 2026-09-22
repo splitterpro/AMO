@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from '../store'
 import { reset, uploadCsv } from '../features/csvUpload/csvUploadSlice'
+import { resetQuestions } from '../features/questions/questionsSlice'
+import SuggestedQuestions from './SuggestedQuestions'
 import './CsvUpload.css'
 
 function CsvUpload() {
@@ -25,27 +27,21 @@ function CsvUpload() {
     handleFile(e.dataTransfer.files?.[0])
   }
 
-  if (status.kind === 'success') {
-    const { rows, columns, column_info, preview } = status.result
-    const previewCols = Object.keys(preview[0] ?? {})
+  const handleRemove = () => {
+    dispatch(reset())
+    dispatch(resetQuestions())
+  }
 
+  if (status.kind === 'success') {
     return (
       <div className="csv-result">
-        <p>Rows: {rows}</p>
-        <p>Columns: {columns}</p>
-
-        <table className="csv-preview-table">
-          <thead>
-            <tr>{previewCols.map((c) => <th key={c}>{c}</th>)}</tr>
-          </thead>
-          <tbody>
-            {preview.map((row, i) => (
-              <tr key={i}>{previewCols.map((c) => <td key={c}>{String(row[c] ?? '')}</td>)}</tr>
-            ))}
-          </tbody>
-        </table>
-
-        <button onClick={() => dispatch(reset())}>Upload another file</button>
+        <div className="csv-file-header">
+          <span className="csv-file-name">{status.fileName}</span>
+          <button type="button" className="csv-file-remove" aria-label="Remove file" onClick={handleRemove}>
+            ×
+          </button>
+        </div>
+        <SuggestedQuestions datasetId={status.result.dataset_id} />
       </div>
     )
   }

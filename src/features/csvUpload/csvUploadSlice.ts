@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-type CsvSummary = {
+export type CsvSummary = {
+  dataset_id: string
   rows: number
   columns: number
   column_info: { name: string; dtype: string }[]
@@ -9,9 +10,9 @@ type CsvSummary = {
 
 type CsvUploadState =
   | { kind: 'idle' }
-  | { kind: 'loading' }
+  | { kind: 'loading'; fileName: string }
   | { kind: 'error'; message: string }
-  | { kind: 'success'; result: CsvSummary }
+  | { kind: 'success'; result: CsvSummary; fileName: string }
 
 export const uploadCsv = createAsyncThunk<CsvSummary, File, { rejectValue: string }>(
   'csvUpload/upload',
@@ -42,8 +43,12 @@ const csvUploadSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(uploadCsv.pending, () => ({ kind: 'loading' }))
-      .addCase(uploadCsv.fulfilled, (_, action) => ({ kind: 'success', result: action.payload }))
+      .addCase(uploadCsv.pending, (_, action) => ({ kind: 'loading', fileName: action.meta.arg.name }))
+      .addCase(uploadCsv.fulfilled, (_, action) => ({
+        kind: 'success',
+        result: action.payload,
+        fileName: action.meta.arg.name,
+      }))
       .addCase(uploadCsv.rejected, (_, action) => ({
         kind: 'error',
         message: action.payload ?? 'Something went wrong.',

@@ -17,33 +17,37 @@
   margin-top: 1rem;
 }
 
-.csv-result button {
-  margin-top: 1rem;
+.csv-file-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
-.csv-columns-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-  text-align: left;
+.csv-file-name {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.csv-preview-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-  font-size: 0.85rem;
-}
-
-.csv-preview-table th,
-.csv-preview-table td {
+.csv-file-remove {
   border: 1px solid #444;
-  padding: 0.4rem 0.6rem;
-  text-align: left;
+  border-radius: 6px;
+  background: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 @media (prefers-color-scheme: light) {
   .csv-dropzone {
     border-color: #aaa;
+  }
+
+  .csv-file-remove {
+    border-color: #ccc;
   }
 }
