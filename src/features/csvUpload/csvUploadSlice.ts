@@ -10,9 +10,9 @@ export type CsvSummary = {
 
 type CsvUploadState =
   | { kind: 'idle' }
-  | { kind: 'loading'; fileName: string }
+  | { kind: 'loading'; fileName: string; fileSize: number }
   | { kind: 'error'; message: string }
-  | { kind: 'success'; result: CsvSummary; fileName: string }
+  | { kind: 'success'; result: CsvSummary; fileName: string; fileSize: number }
 
 export const uploadCsv = createAsyncThunk<CsvSummary, File, { rejectValue: string }>(
   'csvUpload/upload',
@@ -43,11 +43,16 @@ const csvUploadSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(uploadCsv.pending, (_, action) => ({ kind: 'loading', fileName: action.meta.arg.name }))
+      .addCase(uploadCsv.pending, (_, action) => ({
+        kind: 'loading',
+        fileName: action.meta.arg.name,
+        fileSize: action.meta.arg.size,
+      }))
       .addCase(uploadCsv.fulfilled, (_, action) => ({
         kind: 'success',
         result: action.payload,
         fileName: action.meta.arg.name,
+        fileSize: action.meta.arg.size,
       }))
       .addCase(uploadCsv.rejected, (_, action) => ({
         kind: 'error',

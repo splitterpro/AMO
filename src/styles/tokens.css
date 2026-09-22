@@ -1,0 +1,57 @@
+:root {
+  /* Brand */
+  --primary: #6755d9;
+  --primary-hover: #5847c7;
+  --primary-soft: #eeecff;
+  --primary-very-soft: #f7f5ff;
+  --primary-gradient-start: #6755d9;
+  --primary-gradient-end: #8a7cf0;
+
+  /* Background & surface */
+  --background: #faf9f7;
+  --surface: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.75);
+
+  /* Text */
+  --text-primary: #172033;
+  --text-secondary: #667085;
+  --text-muted: #98a2b3;
+
+  /* Borders */
+  --border: rgba(23, 32, 51, 0.08);
+  --border-strong: rgba(23, 32, 51, 0.14);
+
+  /* Semantic colors */
+  --danger: #e85d75;
+  --danger-soft: #fff0f2;
+
+  --warning: #f59e55;
+  --warning-soft: #fff5e9;
+
+  --success: #20a878;
+  --success-soft: #eaf9f2;
+
+  --info: #3978d8;
+  --info-soft: #edf4ff;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-icon: 16px;
+  --radius-card: 18px;
+  --radius-lg: 24px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Shadows */
+  --shadow-card: 0 8px 30px rgba(23, 32, 51, 0.05);
+  --shadow-card-hover: 0 12px 36px rgba(23, 32, 51, 0.09);
+}

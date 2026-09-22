@@ -1,9 +1,29 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import {
+  ChartNoAxesCombined,
+  ChevronDown,
+  LayoutGrid,
+  MapPin,
+  Star,
+  Tag,
+  TrendingDown,
+  UsersRound,
+  type LucideIcon,
+} from 'lucide-react'
 import type { AppDispatch, RootState } from '../store'
 import { QUESTIONS } from '../constants/questions'
 import { askQuestion } from '../features/questions/questionsSlice'
 import './SuggestedQuestions.css'
+
+const CARD_STYLE: Record<number, { icon: LucideIcon; color: string; background: string }> = {
+  1: { icon: TrendingDown, color: 'var(--danger)', background: 'var(--danger-soft)' },
+  2: { icon: Tag, color: 'var(--warning)', background: 'var(--warning-soft)' },
+  3: { icon: MapPin, color: 'var(--primary)', background: 'var(--primary-soft)' },
+  4: { icon: Star, color: 'var(--primary)', background: 'var(--primary-soft)' },
+  5: { icon: UsersRound, color: 'var(--success)', background: 'var(--success-soft)' },
+  6: { icon: ChartNoAxesCombined, color: 'var(--info)', background: 'var(--info-soft)' },
+}
 
 function SuggestedQuestions({ datasetId }: { datasetId: string }) {
   const dispatch = useDispatch<AppDispatch>()
@@ -23,15 +43,28 @@ function SuggestedQuestions({ datasetId }: { datasetId: string }) {
 
   return (
     <div className="suggested-questions">
-      <h2>Suggested questions</h2>
+      <h2>
+        <LayoutGrid size={18} strokeWidth={2} />
+        Suggested analyses
+      </h2>
+      <p className="suggested-questions-subtitle">Click on a topic to explore insights from your data.</p>
       <div className="suggested-questions-grid">
         {QUESTIONS.map((q) => {
           const state = answers[q.id]
           const expanded = expandedId === q.id
+          const style = CARD_STYLE[q.id]
+          const Icon = style.icon
           return (
-            <div key={q.id} className="suggested-question-card">
+            <div key={q.id} className={`suggested-question-card ${expanded ? 'expanded' : ''}`}>
               <button type="button" title={q.question} onClick={() => handleClick(q.id)}>
-                {q.label}
+                <span className="suggested-question-icon" style={{ color: style.color, background: style.background }}>
+                  <Icon size={24} strokeWidth={2} />
+                </span>
+                <span className="suggested-question-text">
+                  <span className="suggested-question-label">{q.label}</span>
+                  <span className="suggested-question-description">{q.description}</span>
+                </span>
+                <ChevronDown size={18} strokeWidth={2} className="suggested-question-chevron" />
               </button>
               {expanded && (
                 <div className="suggested-question-answer">

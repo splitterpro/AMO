@@ -1,11 +1,14 @@
+import Header from './components/Header'
 import CsvUpload from './components/CsvUpload'
 import './App.css'
 
 function App() {
   return (
     <>
-      <h1>CSV Upload</h1>
-      <CsvUpload />
+      <Header />
+      <main className="page">
+        <CsvUpload />
+      </main>
     </>
   )
 }
