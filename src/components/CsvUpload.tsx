@@ -40,7 +40,7 @@ function CsvUpload() {
         <div className="csv-hero">
           <span className="csv-hero-eyebrow">Data analysis</span>
           <h1>Your data is ready!</h1>
-          <p>Explore key insights from your CSV file with pre-defined analyses.</p>
+          <p>Explore key insights from your CSV file with analyses tailored to your data.</p>
         </div>
 
         <div className="csv-file-card">
@@ -60,7 +60,7 @@ function CsvUpload() {
           </button>
         </div>
 
-        <SuggestedQuestions datasetId={status.result.dataset_id} />
+        <SuggestedQuestions datasetId={status.result.dataset_id} questions={status.result.questions} />
       </div>
     )
   }

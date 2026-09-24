@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import type { SuggestedQuestion } from '../../constants/questions'
 
 export type CsvSummary = {
   dataset_id: string
@@ -6,6 +7,7 @@ export type CsvSummary = {
   columns: number
   column_info: { name: string; dtype: string }[]
   preview: Record<string, unknown>[]
+  questions: SuggestedQuestion[]
 }
 
 type CsvUploadState =
