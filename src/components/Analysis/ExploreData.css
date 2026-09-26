@@ -1,0 +1,19 @@
+.explore-data {
+  text-align: left;
+}
+
+.explore-data h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.explore-data-subtitle {
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-6);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}

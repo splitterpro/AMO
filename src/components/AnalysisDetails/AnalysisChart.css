@@ -1,0 +1,52 @@
+.analysis-chart-tooltip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-2) var(--space-3);
+}
+
+.analysis-chart-tooltip-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.analysis-chart-tooltip-value {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.analysis-chart-tooltip-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.analysis-chart-legend-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.analysis-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+
+.analysis-kpi-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.analysis-kpi-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.analysis-kpi-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}

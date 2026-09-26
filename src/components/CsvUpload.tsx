@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { FileText, Upload, X } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import type { AppDispatch, RootState } from '../store'
 import { reset, uploadCsv } from '../features/csvUpload/csvUploadSlice'
 import { resetQuestions } from '../features/questions/questionsSlice'
-import { formatFileSize, formatNumber } from '../utils/format'
-import SuggestedQuestions from './SuggestedQuestions'
+import DatasetHeader from './Dataset/DatasetHeader'
+import DatasetMetrics from './Dataset/DatasetMetrics'
+import ExploreData from './Analysis/ExploreData'
 import './CsvUpload.css'
 
 function CsvUpload() {
@@ -43,24 +44,17 @@ function CsvUpload() {
           <p>Explore key insights from your CSV file with analyses tailored to your data.</p>
         </div>
 
-        <div className="csv-file-card">
-          <div className="csv-file-icon">
-            <FileText size={24} strokeWidth={2} />
-          </div>
-          <div className="csv-file-info">
-            <span className="csv-file-name">{status.fileName}</span>
-            <span className="csv-file-stats">
-              {formatNumber(status.result.rows)} rows &middot; {formatNumber(status.result.columns)} columns &middot;{' '}
-              {formatFileSize(status.fileSize)}
-            </span>
-          </div>
-          <button type="button" className="csv-file-remove" onClick={handleRemove}>
-            <X size={16} strokeWidth={2} />
-            Remove file
-          </button>
-        </div>
+        <DatasetHeader
+          fileName={status.fileName}
+          fileSize={status.fileSize}
+          rows={status.result.rows}
+          columns={status.result.columns}
+          onRemove={handleRemove}
+        />
 
-        <SuggestedQuestions datasetId={status.result.dataset_id} questions={status.result.questions} />
+        <DatasetMetrics metrics={status.result.metrics} rowsAnalyzed={status.result.rows} />
+
+        <ExploreData datasetId={status.result.dataset_id} questions={status.result.questions} />
       </div>
     )
   }

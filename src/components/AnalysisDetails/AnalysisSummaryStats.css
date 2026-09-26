@@ -1,0 +1,23 @@
+.analysis-summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  padding: var(--space-3) 0;
+}
+
+.analysis-summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.analysis-summary-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.analysis-summary-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

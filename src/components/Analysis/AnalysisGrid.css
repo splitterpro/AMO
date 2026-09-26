@@ -1,0 +1,13 @@
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.analysis-grid-empty {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: var(--space-8) 0;
+  text-align: center;
+}

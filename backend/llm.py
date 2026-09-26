@@ -2,11 +2,15 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Literal, Optional
 
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from google import genai
 from pydantic import BaseModel
+import pandas as pd
+
+from models import OPERATION_CATEGORY, AnalysisSpec, QuestionSpec
+from validation import validate as validate_recipe
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
@@ -14,56 +18,71 @@ logger = logging.getLogger(__name__)
 
 MODEL = "gemini-flash-lite-latest"
 
-Operation = Literal[
-    "groupby_sum",
-    "groupby_mean",
-    "trend_monthly",
-    "top_n",
-    "concentration",
-    "bin_relationship",
-]
+CANDIDATE_POOL_SIZE = 10
+MAX_QUESTIONS = 6
+MAX_PER_CATEGORY = 2
 
 
-class AnalysisSpec(BaseModel):
-    operation: Operation
-    dimension: Optional[str] = None
-    measure: str
-    secondary_measure: Optional[str] = None
-    date_column: Optional[str] = None
-    sort: Literal["asc", "desc"] = "desc"
-    limit: int = 5
+class _GenerationQuestionSpec(BaseModel):
+    """Gemini-facing shape: same as the shared QuestionSpec minus 'category', since
+    category is derived deterministically from 'operation' in code (see
+    models.OPERATION_CATEGORY) rather than left to Gemini's judgment - this keeps two
+    questions with the same operation from ever landing in different categories."""
 
-
-class QuestionSpec(BaseModel):
     label: str
     question: str
     description: str
     analysis: AnalysisSpec
 
 
-class QuestionsResponse(BaseModel):
-    questions: list[QuestionSpec]
+class _GenerationQuestionsResponse(BaseModel):
+    questions: list[_GenerationQuestionSpec]
 
 
-QUESTIONS_SYSTEM_PROMPT = """You are a data analyst. Given a CSV file's column names, \
-types, a small sample of rows, and basic per-column statistics, propose exactly 6 \
-insightful analysis questions a business user would want answered from this data.
+QUESTIONS_SYSTEM_PROMPT = f"""You are a data analyst. Given a CSV file's column names, \
+types, and a small sample of rows, propose up to {CANDIDATE_POOL_SIZE} insightful \
+analysis questions a business user would want answered from this data.
 
 Every column name you use inside "analysis" must be copied exactly, character for \
 character, from the given column list - never invent, translate, or rename a column. \
-Only propose a question if the columns it needs actually exist in the given list.
+Only propose a question if every column it needs actually exists in the given list, \
+and only use a column with a type that actually supports the operation (e.g. never \
+average a text column, never treat a non-date column as a date).
 
-Pick "operation" from this fixed set only:
+Pick "operation" from this fixed set only, and set ONLY the fields each operation \
+actually needs - leave every other field null:
+
+Grouped aggregation (needs "dimension"; all but groupby_count also need "measure"):
 - groupby_sum: sum "measure" grouped by "dimension"
 - groupby_mean: average "measure" grouped by "dimension"
-- trend_monthly: sum "measure" by month using "date_column"
-- top_n: highest "measure" totals grouped by "dimension"
+- groupby_count: count of rows grouped by "dimension" (no "measure")
+- groupby_median: median "measure" grouped by "dimension"
+- groupby_min: minimum "measure" grouped by "dimension"
+- groupby_max: maximum "measure" grouped by "dimension"
 - concentration: how much of total "measure" the top group of "dimension" holds
-- bin_relationship: how "measure" (x) relates to "secondary_measure" (y), binned
 
-Only set "date_column" for trend_monthly, and only set "secondary_measure" for \
-bin_relationship; leave the rest null. Prefer a variety of operations and columns \
-across the 6 questions rather than repeating the same one."""
+Ranking (needs "dimension" and "measure"):
+- top_n: highest "measure" totals grouped by "dimension"
+- bottom_n: lowest "measure" totals grouped by "dimension"
+
+Trends over time (needs "date_column" and "measure"):
+- trend_daily / trend_weekly / trend_monthly / trend_yearly: sum "measure" by day, \
+week, month, or year
+- percentage_change: period-over-period percent change in "measure" over time
+- growth_rate: overall growth in "measure" from the first to the last period
+
+Single-column statistics (needs only "measure", no "dimension"):
+- distribution: histogram of "measure" values
+- standard_deviation: mean/std/min/max/median of "measure"
+
+Relationship between two numeric columns (needs "measure" and "secondary_measure", \
+no "dimension"):
+- correlation: correlation coefficient between the two columns
+- bin_relationship: how "secondary_measure" changes across bins of "measure"
+
+Propose a genuinely varied mix across these groups instead of clustering on one \
+operation or one pair of columns, and never propose the same operation on the same \
+column(s) twice."""
 
 NARRATION_SYSTEM_PROMPT = """You are a data analyst. You will be given a question and \
 an already-computed result table. Write a single, concise 1-2 sentence insight based \
@@ -93,7 +112,45 @@ def _columns_are_valid(analysis: AnalysisSpec, valid_columns: set[str]) -> bool:
     return True
 
 
-def generate_questions(column_info: list[dict], preview_rows: list[dict]) -> list[QuestionSpec]:
+def _recipe_signature(analysis: AnalysisSpec) -> tuple:
+    return (analysis.operation, analysis.dimension, analysis.measure, analysis.secondary_measure, analysis.date_column)
+
+
+def _is_valid_recipe(df: pd.DataFrame, analysis: AnalysisSpec) -> bool:
+    try:
+        validate_recipe(df, analysis)
+        return True
+    except HTTPException:
+        return False
+
+
+def _select_diverse(candidates: list[QuestionSpec], max_questions: int, max_per_category: int) -> list[QuestionSpec]:
+    """Greedily fills slots while capping how many questions come from the same
+    category, then makes a second pass (ignoring the cap) to fill any slots still
+    left - so diversity is preferred but a shortage of one category never shrinks
+    the final count below what the candidate pool could actually support."""
+    selected: list[QuestionSpec] = []
+    category_counts: dict[str, int] = {}
+    leftover: list[QuestionSpec] = []
+
+    for question in candidates:
+        if len(selected) >= max_questions:
+            break
+        if category_counts.get(question.category, 0) >= max_per_category:
+            leftover.append(question)
+            continue
+        selected.append(question)
+        category_counts[question.category] = category_counts.get(question.category, 0) + 1
+
+    for question in leftover:
+        if len(selected) >= max_questions:
+            break
+        selected.append(question)
+
+    return selected
+
+
+def generate_questions(df: pd.DataFrame, column_info: list[dict], preview_rows: list[dict]) -> list[QuestionSpec]:
     client = _get_client()
     if client is None:
         return []
@@ -107,17 +164,39 @@ def generate_questions(column_info: list[dict], preview_rows: list[dict]) -> lis
             response_format={
                 "type": "text",
                 "mime_type": "application/json",
-                "schema": QuestionsResponse.model_json_schema(),
+                "schema": _GenerationQuestionsResponse.model_json_schema(),
             },
         )
-        parsed = QuestionsResponse.model_validate_json(response.output_text)
+        parsed = _GenerationQuestionsResponse.model_validate_json(response.output_text)
     except Exception:
         logger.exception("Gemini question generation failed")
         return []
 
     valid_columns = {c["name"] for c in column_info}
-    specs = [q for q in parsed.questions if _columns_are_valid(q.analysis, valid_columns)]
-    return specs[:6]
+    seen_signatures: set[tuple] = set()
+    candidates: list[QuestionSpec] = []
+
+    for item in parsed.questions:
+        analysis = item.analysis
+        if not _columns_are_valid(analysis, valid_columns):
+            continue
+        signature = _recipe_signature(analysis)
+        if signature in seen_signatures:
+            continue
+        if not _is_valid_recipe(df, analysis):
+            continue
+        seen_signatures.add(signature)
+        candidates.append(
+            QuestionSpec(
+                label=item.label,
+                question=item.question,
+                description=item.description,
+                category=OPERATION_CATEGORY[analysis.operation],
+                analysis=analysis,
+            )
+        )
+
+    return _select_diverse(candidates, max_questions=MAX_QUESTIONS, max_per_category=MAX_PER_CATEGORY)
 
 
 def narrate_answer(question: str, table: list[dict]) -> str:

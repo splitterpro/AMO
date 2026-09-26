@@ -1,15 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-
-export interface QuestionAnswer {
-  question_id: number
-  answer: string
-  table: Record<string, unknown>[] | null
-}
+import type { AnalysisResult, CalculationDetails, Visualization } from '../../types/analysis'
 
 interface QuestionState {
   status: 'loading' | 'success' | 'error'
   answer?: string
   table?: Record<string, unknown>[] | null
+  visualization?: Visualization
+  calculation?: CalculationDetails
   error?: string
 }
 
@@ -29,7 +26,7 @@ export const askQuestion = createAsyncThunk(
       const body = await res.json().catch(() => ({}))
       throw new Error(body.detail ?? 'Something went wrong.')
     }
-    return (await res.json()) as QuestionAnswer
+    return (await res.json()) as AnalysisResult
   },
 )
 
@@ -49,6 +46,8 @@ const questionsSlice = createSlice({
           status: 'success',
           answer: action.payload.answer,
           table: action.payload.table,
+          visualization: action.payload.visualization,
+          calculation: action.payload.calculation,
         }
       })
       .addCase(askQuestion.rejected, (state, action) => {

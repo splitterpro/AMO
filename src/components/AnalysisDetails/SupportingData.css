@@ -1,0 +1,112 @@
+.supporting-data {
+  margin-top: var(--space-4);
+}
+
+.supporting-data-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.supporting-data-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.supporting-data-export {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.supporting-data-export button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.supporting-data-export button:hover {
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+
+.supporting-data table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.supporting-data th,
+.supporting-data td {
+  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.supporting-data th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0;
+}
+
+.supporting-data-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  color: inherit;
+  font-weight: inherit;
+}
+
+.supporting-data-sort svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.supporting-data-sort svg.active {
+  color: var(--primary);
+}
+
+.supporting-data-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.supporting-data-pagination button {
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.supporting-data-pagination button:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.supporting-data-pagination button:not(:disabled):hover {
+  background-color: var(--primary-soft);
+  color: var(--primary);
+}
+
+.supporting-data-empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-top: var(--space-4);
+}

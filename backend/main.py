@@ -6,11 +6,12 @@ from uuid import uuid4
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from analysis import run_analysis
-from llm import QuestionSpec, generate_questions, narrate_answer
+from llm import generate_questions, narrate_answer
+from metrics import compute_metrics
+from models import OPERATION_AGGREGATION_LABEL, OPERATION_VISUALIZATION, QuestionSpec
 
 app = FastAPI()
 PREVIEW_ROWS = 5
@@ -34,14 +35,10 @@ def _get_dataset(dataset_id: str) -> dict:
     return entry
 
 
-def error(message: str):
-    return JSONResponse(status_code=400, content={"detail": message})
-
-
 @app.post("/api/csv/summary")
 async def summarize(file: UploadFile = File(...)):
     if not (file.filename or "").lower().endswith(".csv"):
-        return error("Only .csv files are supported.")
+        raise HTTPException(status_code=400, detail="Only .csv files are supported.")
 
     content = await file.read()
     try:
@@ -50,16 +47,17 @@ async def summarize(file: UploadFile = File(...)):
         except UnicodeDecodeError:
             df = pd.read_csv(io.BytesIO(content), encoding="latin-1")
     except (pd.errors.EmptyDataError, pd.errors.ParserError) as err:
-        return error(f"Could not parse CSV: {err}")
+        raise HTTPException(status_code=400, detail=f"Could not parse CSV: {err}")
 
     if df.shape[0] == 0 or df.shape[1] == 0:
-        return error("The CSV file has no data.")
+        raise HTTPException(status_code=400, detail="The CSV file has no data.")
 
     column_info = [{"name": name, "dtype": str(dtype)} for name, dtype in df.dtypes.items()]
     preview_rows = json.loads(df.head(PREVIEW_ROWS).to_json(orient="records", date_format="iso"))
 
-    questions = await run_in_threadpool(generate_questions, column_info, preview_rows)
+    questions = await run_in_threadpool(generate_questions, df, column_info, preview_rows)
     dataset_id = _cache_dataset(df, questions)
+    metrics = compute_metrics(df)
 
     return {
         "dataset_id": dataset_id,
@@ -67,8 +65,15 @@ async def summarize(file: UploadFile = File(...)):
         "columns": df.shape[1],
         "column_info": column_info,
         "preview": preview_rows,
+        "metrics": metrics,
         "questions": [
-            {"id": i + 1, "label": q.label, "question": q.question, "description": q.description}
+            {
+                "id": i + 1,
+                "label": q.label,
+                "question": q.question,
+                "description": q.description,
+                "category": q.category,
+            }
             for i, q in enumerate(questions)
         ],
     }
@@ -90,4 +95,22 @@ async def ask(body: AskRequest):
     table_records = table.to_dict("records")
     answer = await run_in_threadpool(narrate_answer, spec.question, table_records)
 
-    return {"question_id": body.question_id, "answer": answer, "table": table_records}
+    return {
+        "question_id": body.question_id,
+        "answer": answer,
+        "table": table_records,
+        "visualization": {
+            "type": OPERATION_VISUALIZATION[spec.analysis.operation],
+            "data": table_records,
+        },
+        "calculation": {
+            "operation": spec.analysis.operation,
+            "dimension_column": spec.analysis.dimension,
+            "measure_column": spec.analysis.measure,
+            "secondary_measure_column": spec.analysis.secondary_measure,
+            "date_column": spec.analysis.date_column,
+            "aggregation": OPERATION_AGGREGATION_LABEL[spec.analysis.operation],
+            "rows_analyzed": len(entry["df"]),
+            "calculated_by": "pandas",
+        },
+    }

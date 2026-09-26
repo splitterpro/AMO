@@ -1,0 +1,76 @@
+.analysis-card {
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.analysis-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.analysis-card.expanded {
+  background: var(--primary-very-soft);
+  border-color: var(--primary-soft);
+}
+
+.analysis-card > button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  text-align: left;
+  padding: var(--space-6);
+}
+
+.analysis-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: var(--radius-icon);
+}
+
+.analysis-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.analysis-card-category {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.analysis-card-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.analysis-card-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.analysis-card-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color 0.2s, transform 0.2s;
+}
+
+.analysis-card:hover .analysis-card-chevron {
+  transform: translateX(2px);
+}
+
+.analysis-card.expanded .analysis-card-chevron {
+  color: var(--primary);
+}
