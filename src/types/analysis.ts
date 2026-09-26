@@ -18,6 +18,7 @@ export type Operation =
   | 'correlation'
   | 'concentration'
   | 'bin_relationship'
+  | 'scatter_relationship'
 
 export type AnalysisCategory = 'Trends' | 'Comparisons' | 'Top & Bottom' | 'Relationships' | 'Statistics'
 

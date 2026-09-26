@@ -24,6 +24,7 @@ const OPERATION_LABEL: Record<Operation, string> = {
   correlation: 'Correlation',
   concentration: 'Concentration',
   bin_relationship: 'Binned relationship',
+  scatter_relationship: 'Scatter relationship',
 }
 
 interface CalculationDetailsPanelProps {

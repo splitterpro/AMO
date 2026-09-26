@@ -10,6 +10,8 @@ import {
   Pie,
   PieChart,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -121,6 +123,40 @@ function DonutView({ data, xKey, yKey }: SeriesChartProps) {
   )
 }
 
+function ScatterView({ data, xKey, yKey, calculation }: SeriesChartProps & { calculation?: CalculationDetails }) {
+  const xLabel = calculation?.measure_column ?? xKey
+  const yLabel = calculation?.secondary_measure_column ?? yKey
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <ScatterChart margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+        <CartesianGrid stroke="var(--border)" strokeDasharray="0" />
+        <XAxis type="number" dataKey={xKey} name={xLabel} tick={AXIS_TICK} axisLine={AXIS_LINE} tickLine={false} />
+        <YAxis type="number" dataKey={yKey} name={yLabel} tick={AXIS_TICK} axisLine={AXIS_LINE} tickLine={false} />
+        <Tooltip
+          cursor={{ strokeDasharray: '3 3', stroke: 'var(--border)' }}
+          content={({ active, payload }) => {
+            if (!active || !payload || payload.length === 0) return null
+            const point = payload[0].payload as Record<string, unknown>
+            return (
+              <div className="analysis-chart-tooltip">
+                <div className="analysis-chart-tooltip-row">
+                  <span className="analysis-chart-tooltip-value">{formatNumber(Number(point[xKey]))}</span>
+                  <span className="analysis-chart-tooltip-label">{xLabel}</span>
+                </div>
+                <div className="analysis-chart-tooltip-row">
+                  <span className="analysis-chart-tooltip-value">{formatNumber(Number(point[yKey]))}</span>
+                  <span className="analysis-chart-tooltip-label">{yLabel}</span>
+                </div>
+              </div>
+            )
+          }}
+        />
+        <Scatter data={data} fill="var(--primary)" />
+      </ScatterChart>
+    </ResponsiveContainer>
+  )
+}
+
 function KpiView({ data }: { data: Record<string, unknown>[] }) {
   const row = data[0]
   if (!row) return null
@@ -170,9 +206,7 @@ function AnalysisChart({ visualization, calculation }: AnalysisChartProps) {
     case 'kpi':
       return <KpiView data={data} />
     case 'scatter':
-      // Not yet reachable: the backend maps every current scatter-eligible operation (correlation)
-      // to "kpi" instead, since it only returns an aggregate coefficient, not paired points.
-      return null
+      return <ScatterView data={data} xKey={xKey} yKey={yKey} calculation={calculation} />
     default:
       return null
   }

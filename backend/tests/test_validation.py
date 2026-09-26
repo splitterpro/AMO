@@ -49,6 +49,25 @@ def test_groupby_count_does_not_require_measure(sales_df):
     validate(sales_df, spec)  # should not raise
 
 
+def test_scatter_relationship_missing_secondary_measure_raises_400(sales_df):
+    spec = AnalysisSpec(operation="scatter_relationship", measure="Sales")
+    with pytest.raises(HTTPException) as exc_info:
+        validate(sales_df, spec)
+    assert exc_info.value.status_code == 400
+
+
+def test_scatter_relationship_non_numeric_column_raises_400(edge_df):
+    spec = AnalysisSpec(operation="scatter_relationship", measure="Value", secondary_measure="Label")
+    with pytest.raises(HTTPException) as exc_info:
+        validate(edge_df, spec)
+    assert exc_info.value.status_code == 400
+
+
+def test_scatter_relationship_valid_spec_passes(sales_df):
+    spec = AnalysisSpec(operation="scatter_relationship", measure="Sales", secondary_measure="Discount")
+    validate(sales_df, spec)  # should not raise
+
+
 @pytest.mark.parametrize("limit", [0, 51])
 def test_limit_out_of_bounds_rejected_by_model(limit):
     with pytest.raises(ValidationError):

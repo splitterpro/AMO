@@ -59,5 +59,6 @@ export function resolveSeriesKeys(row: Record<string, unknown> | undefined): Ser
   if ('band' in row) return { xKey: 'band', yKey: 'value' }
   if ('bin' in row) return { xKey: 'bin', yKey: 'count' }
   if ('period' in row) return { xKey: 'period', yKey: 'value' }
+  if ('x' in row && 'y' in row) return { xKey: 'x', yKey: 'y' }
   return { xKey: 'category', yKey: 'value' }
 }

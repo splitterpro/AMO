@@ -23,6 +23,7 @@ REQUIRED_FIELDS: dict[str, tuple[str, ...]] = {
     "correlation": ("measure", "secondary_measure"),
     "concentration": ("dimension", "measure"),
     "bin_relationship": ("measure", "secondary_measure"),
+    "scatter_relationship": ("measure", "secondary_measure"),
 }
 
 # Operation -> spec fields that must resolve to a numeric-dtype column.
@@ -45,6 +46,7 @@ NUMERIC_FIELDS: dict[str, tuple[str, ...]] = {
     "correlation": ("measure", "secondary_measure"),
     "concentration": ("measure",),
     "bin_relationship": ("measure", "secondary_measure"),
+    "scatter_relationship": ("measure", "secondary_measure"),
 }
 
 DATE_FIELDS: dict[str, tuple[str, ...]] = {

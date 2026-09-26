@@ -150,3 +150,19 @@ def test_bin_relationship(sales_df):
     )
     assert list(result.columns) == ["band", "value"]
     assert 1 <= len(result) <= 5
+
+
+def test_scatter_relationship(sales_df):
+    result = run_analysis(
+        sales_df, _spec(operation="scatter_relationship", measure="Sales", secondary_measure="Discount")
+    )
+    assert list(result.columns) == ["x", "y"]
+    assert len(result) == 8
+    assert set(result["x"]) == set(sales_df["Sales"])
+    assert set(result["y"]) == set(sales_df["Discount"])
+
+
+def test_scatter_relationship_caps_point_count():
+    large_df = pd.DataFrame({"A": range(500), "B": range(500)})
+    result = run_analysis(large_df, _spec(operation="scatter_relationship", measure="A", secondary_measure="B"))
+    assert len(result) == 200

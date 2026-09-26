@@ -22,6 +22,7 @@ Operation = Literal[
     "correlation",
     "concentration",
     "bin_relationship",
+    "scatter_relationship",
 ]
 
 Category = Literal["Trends", "Comparisons", "Top & Bottom", "Relationships", "Statistics"]
@@ -46,6 +47,7 @@ OPERATION_CATEGORY: dict[str, Category] = {
     "bottom_n": "Top & Bottom",
     "correlation": "Relationships",
     "bin_relationship": "Relationships",
+    "scatter_relationship": "Relationships",
     "distribution": "Statistics",
     "standard_deviation": "Statistics",
 }
@@ -55,9 +57,9 @@ VisualizationType = Literal["bar", "line", "horizontal_bar", "donut", "scatter",
 # Deterministic operation -> chart-type lookup so the frontend never asks Gemini to pick a
 # chart type. "kpi" marks operations whose handler always returns a single summary row
 # (growth_rate, standard_deviation, correlation) rather than a plottable series - see
-# analysis.py for the per-operation output shapes this is derived from. correlation is
-# "kpi" rather than "scatter" because it currently returns one aggregate coefficient row,
-# not raw paired points to plot; true scatter support is a future analysis.py enhancement.
+# analysis.py for the per-operation output shapes this is derived from. correlation stays
+# "kpi" because it returns one aggregate coefficient row; scatter_relationship is the
+# "scatter" counterpart, returning raw paired points instead.
 OPERATION_VISUALIZATION: dict[str, VisualizationType] = {
     "groupby_sum": "bar",
     "groupby_mean": "bar",
@@ -78,6 +80,7 @@ OPERATION_VISUALIZATION: dict[str, VisualizationType] = {
     "correlation": "kpi",
     "concentration": "donut",
     "bin_relationship": "bar",
+    "scatter_relationship": "scatter",
 }
 
 # Human-readable aggregation label for the "Calculation Details" transparency panel.
@@ -101,6 +104,7 @@ OPERATION_AGGREGATION_LABEL: dict[str, str] = {
     "correlation": "CORRELATION",
     "concentration": "SHARE_OF_TOTAL",
     "bin_relationship": "BINNED_AVERAGE",
+    "scatter_relationship": "RAW_PAIRS",
 }
 
 

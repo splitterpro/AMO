@@ -79,6 +79,8 @@ Relationship between two numeric columns (needs "measure" and "secondary_measure
 no "dimension"):
 - correlation: correlation coefficient between the two columns
 - bin_relationship: how "secondary_measure" changes across bins of "measure"
+- scatter_relationship: raw paired values of the two columns, for visualizing their \
+relationship directly as a scatter plot
 
 Propose a genuinely varied mix across these groups instead of clustering on one \
 operation or one pair of columns, and never propose the same operation on the same \

@@ -152,6 +152,18 @@ def _correlation(df: pd.DataFrame, spec: AnalysisSpec) -> pd.DataFrame:
     )
 
 
+SCATTER_POINT_CAP = 200
+
+
+def _scatter_relationship(df: pd.DataFrame, spec: AnalysisSpec) -> pd.DataFrame:
+    a = pd.to_numeric(df[spec.measure], errors="coerce")
+    b = pd.to_numeric(df[spec.secondary_measure], errors="coerce")
+    paired = pd.DataFrame({"x": a, "y": b}).dropna()
+    if len(paired) > SCATTER_POINT_CAP:
+        paired = paired.sample(SCATTER_POINT_CAP, random_state=42)
+    return paired.reset_index(drop=True)
+
+
 def _concentration(df: pd.DataFrame, spec: AnalysisSpec) -> pd.DataFrame:
     grouped = df.groupby(spec.dimension)[spec.measure].sum().sort_values(ascending=False)
     total = float(grouped.sum())
@@ -193,6 +205,7 @@ OPERATIONS = {
     "correlation": _correlation,
     "concentration": _concentration,
     "bin_relationship": _bin_relationship,
+    "scatter_relationship": _scatter_relationship,
 }
 
 
